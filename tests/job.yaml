@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: workflow-test-
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      containers:
+      - name: workflow-test
+        image: cowsay:latest
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: nix-store
+          mountPath: /nix/store
+          readOnly: true
+      volumes:
+      - name: nix-store
+        hostPath:
+          path: /nix/store
+          type: Directory
+      restartPolicy: Never
