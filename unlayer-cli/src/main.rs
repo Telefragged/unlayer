@@ -99,15 +99,19 @@ fn extract_json<R: Read + Seek, O: serde::de::DeserializeOwned>(
         let entry = entry?;
         let path = entry.path()?;
 
-        if let Some(name) = path.file_name().and_then(|path| path.to_str())
-            && name == file_name
-        {
-            let output: O = serde_json::from_reader(entry)?;
-            let input_file = archive.into_inner();
-            input_file.seek(SeekFrom::Start(0))?;
+        let Some(name) = path.file_name().and_then(|path| path.to_str()) else {
+            continue;
+        };
 
-            return Ok(output);
+        if name != file_name {
+            continue;
         }
+
+        let output: O = serde_json::from_reader(entry)?;
+        let input_file = archive.into_inner();
+        input_file.seek(SeekFrom::Start(0))?;
+
+        return Ok(output);
     }
 
     anyhow::bail!("Failed to find {} in provided archive", file_name)
